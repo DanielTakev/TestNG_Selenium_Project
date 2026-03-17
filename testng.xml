@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+
+<!--
+    parallel : "none" | "tests" | "classes" | "methods"
+    thread-count : number of parallel threads (only relevant when parallel != none)
+    verbose    : 0-10  (2 = standard output, 10 = maximum debug)
+-->
+<suite name="Regression Suite" verbose="2" preserve-order="true"
+       parallel="none" thread-count="1">
+
+    <!-- Suite-level listeners apply to every test in this suite -->
+    <listeners>
+        <listener class-name="org.dani.listeners.ScreenshotListener"/>
+    </listeners>
+
+    <test name="Login Tests">
+        <classes>
+            <class name="org.dani.tests.LoginTests"/>
+        </classes>
+    </test>
+
+    <test name="Post Tests">
+        <classes>
+            <class name="org.dani.tests.PostTests"/>
+        </classes>
+    </test>
+
+    <test name="Registration Tests">
+        <classes>
+            <class name="org.dani.tests.RegistrationTests"/>
+        </classes>
+    </test>
+
+</suite>
