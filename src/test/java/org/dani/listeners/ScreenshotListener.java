@@ -24,6 +24,7 @@ public class ScreenshotListener implements ITestListener {
      * Captures a full browser window screenshot whenever a test fails.
      * The file is saved to {@code screenshots/<testName>_<timestamp>.png}
      * relative to the project root.
+     * TODO: Clear the directory before each test run !!!
      */
     @Override
     public void onTestFailure(ITestResult result) {
