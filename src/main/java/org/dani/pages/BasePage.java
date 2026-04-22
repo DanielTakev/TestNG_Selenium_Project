@@ -1,14 +1,15 @@
 package org.dani.pages;
 
+import java.time.Duration;
+
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.pagefactory.AjaxElementLocatorFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-
-import java.time.Duration;
 
 public class BasePage {
 
@@ -75,6 +76,14 @@ public class BasePage {
         wait.until(ExpectedConditions.urlToBe(url));
     }
 
+    /**
+     * Waits until the element is present in the DOM.
+     * @param locator the element locator
+     */
+    protected WebElement waitPresentInDom(By locator) {
+        return wait.until(ExpectedConditions.presenceOfElementLocated(locator));
+    }
+
     protected boolean isElementVisible(By locator) {
         try {
             wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
@@ -83,6 +92,10 @@ public class BasePage {
             System.out.println("Element: " + locator + " >>> NOT FOUND!");
             return false;
         }
+    }
+
+    protected void waitForElementToBeVisible(By locator) {
+        wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
     }
 
     /**
@@ -103,12 +116,60 @@ public class BasePage {
 
     /**
      * Waits until the element is clickable and clicks it.
+     * Scrolls the element into view before clicking.
      *
      * @param element the target WebElement
      */
     protected void click(WebElement element) {
         wait.until(ExpectedConditions.elementToBeClickable(element));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});", element);
         element.click();
+    }
+
+    /**
+     * Waits until the toast message element contains exactly the expected text.
+     * Prints the actual text if there is a mismatch, or a not-found message if
+     * the element is absent.
+     *
+     * @param expectedText the exact text expected in the {@code .toast-message} element
+     * @return {@code true} if the toast displays the expected text, {@code false} otherwise
+     */
+    public boolean isToastMessageVisible(String expectedText) {
+        try {
+            wait.until(ExpectedConditions.textToBe(By.cssSelector(".toast-message"), expectedText));
+            return true;
+        } catch (Exception e) {
+            try {
+                String actualText = driver.findElement(By.cssSelector(".toast-message")).getText();
+                System.out.println("Toast message mismatch! Expected: '" + expectedText + "' | Actual: '" + actualText + "'");
+            } catch (Exception inner) {
+                System.out.println("Toast message with text '" + expectedText + "' >>> NOT FOUND!");
+            }
+            return false;
+        }
+    }
+
+    /** Scrolls the browser window to the very bottom of the page using JavaScript. */
+    protected void scrollToBottom() {
+        ((JavascriptExecutor) driver).executeScript("window.scrollTo(0, document.body.scrollHeight)");
+    }
+
+    /**
+     * Waits for a lazy-load spinner to appear and then disappear.
+     * Sleeps briefly first to give the spinner time to appear after a scroll,
+     * then waits up to the configured timeout for it to become invisible.
+     * If the spinner never appears (no more content loading), the wait is skipped silently.
+     *
+     * @param spinnerLocator the {@link By} locator for the spinner element
+     * @throws InterruptedException if the thread sleep is interrupted
+     */
+    protected void waitForSpinnerToDisappear(By spinnerLocator) throws InterruptedException {
+        Thread.sleep(700);
+        try {
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(spinnerLocator));
+        } catch (Exception e) {
+            // Spinner never appeared or already gone — safe to continue
+        }
     }
 
     /**
